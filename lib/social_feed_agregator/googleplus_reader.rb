@@ -13,30 +13,30 @@ module SocialFeedAgregator
       @user_id = options[:googleplus_user_id]
       @api_key = options[:googleplus_api_key]
     end
-        
-    def get_feeds(options={}) 
+
+    def get_feeds(options={})
       super(options)
       @user_id = options[:user_id] if options[:user_id]
       count = options[:count] || 25
 
-      from_date = options[:from_date] || DateTime.new(1970,1,1) 
-      
+      from_date = options[:from_date] || DateTime.new(1970, 1, 1)
+
       feeds, i, count_per_request, items = [], 0, 100, 0
 
-      opts =  {count: count < count_per_request ? count : count_per_request}
+      opts = { count: count < count_per_request ? count : count_per_request }
 
       parts = (count.to_f / count_per_request).ceil
 
-      url = "https://www.googleapis.com/plus/v1/people/#{@user_id}/activities/public?key=#{@api_key}&maxResults=#{opts[:count]}"      
+      url = "https://www.googleapis.com/plus/v1/people/#{@user_id}/activities/public?key=#{@api_key}&maxResults=#{opts[:count]}"
 
       begin
-        i+=1
+        i          += 1
         next_query = ""
-        data = JSON.parse( RestClient.get("#{url}#{next_query}") )
+        data       = JSON.parse(RestClient.get("#{url}#{next_query}"))
 
-        data['items'].each do |post|    
-          items+=1
-          break if items > count          
+        data['items'].each do |post|
+          items += 1
+          break if items > count
 
           # Break if the date is less
           if DateTime.parse(post["published"]) <= from_date
@@ -46,45 +46,47 @@ module SocialFeedAgregator
 
           feed = fill_feed post
 
-          block_given? ? yield(feed) : feeds << feed        
-        end       
+          block_given? ? yield(feed) : feeds << feed
+        end
         next_query = "&pageToken=#{data['nextPageToken']}"
-        
-      end while (data['items'].count > 0 ) && (i < parts)      
-    end   
+
+      end while (data['items'].count > 0) && (i < parts)
+    end
 
     private
-    def fill_feed(post)
-      picture_url, link, caption = "", "", ""
 
-      if atts = post['object']['attachments']
-        if atts.count > 0              
-          attach = atts.first
-          picture_url = attach['fullImage']['url'] if attach['fullImage']
-          link = attach['url']
-          caption = attach['displayName']
+    def fill_feed(post)
+      picture_url, link = "", ""
+      atts              = post['object']['attachments']
+
+      if atts && atts.count > 0
+        attach = atts.first
+
+        if attach['fullImage']
+          picture_url = attach['fullImage']['url']
+          link         = attach['url']
+          image_height = attach['fullImage']['height']
+          image_width  = attach['fullImage']['width']
         end
       end
 
       Feed.new(
-        feed_type: :googleplus,
-        feed_id: post['id'],
-        
-        user_id: post['actor']['id'],
-        user_name: post['actor']['displayName'],
-        
-        permalink: post['url'],
-        message: post['object']['content'],
-        # description: post['object']['content'],
+          feed_type:      :googleplus,
+          feed_id:        post['id'],
 
-        # name: post['title'],
+          user_id:        post['actor']['id'],
+          user_name:      post['actor']['displayName'],
 
-        picture_url: picture_url,
-        link: link,
-        # caption: caption,
-        
-        created_at: DateTime.parse(post['published']),
-        type: post['object']['objectType']
+          permalink:      post['url'],
+          message:        post['object']['content'],
+
+          picture_url:    picture_url,
+          link:           link,
+          picture_height: image_height,
+          picture_width:  image_width,
+
+          created_at:     DateTime.parse(post['published']),
+          type:           post['object']['objectType']
       )
     end
   end
