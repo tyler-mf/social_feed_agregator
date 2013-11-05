@@ -86,7 +86,7 @@ module SocialFeedAgregator
         end
       end
 
-      image_size = FastImage.size picture_url
+      image_size = FastImage.size(picture_url) || []
 
       Feed.new(
           feed_type:      :twitter,
