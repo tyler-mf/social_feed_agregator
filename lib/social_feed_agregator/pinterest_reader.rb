@@ -43,8 +43,10 @@ module SocialFeedAgregator
     private 
     def fill_feed(item)
       desc = item.xpath('description').inner_text.match(/src="(\S+)".+<p>(.+)<\/p>/)
-        
-      feed = Feed.new(
+
+      image_size = FastImage.size(desc[1]) || []
+
+      Feed.new(
         feed_type: :pinterest,
         feed_id: item.xpath('guid').inner_text.match(/\d+/)[0].to_s,
 
@@ -54,6 +56,8 @@ module SocialFeedAgregator
         # name: item.xpath('title').inner_text,          
         permalink: item.xpath('link').inner_text,
         picture_url: desc[1],
+        picture_width: image_size[0],
+        picture_height: image_size[1],
         description: desc[2],
         created_at: DateTime.parse(item.xpath('pubDate').inner_text), #.strftime("%Y-%m-%d %H:%M:%S")
       )
