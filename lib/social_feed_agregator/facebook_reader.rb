@@ -1,6 +1,7 @@
 require "social_feed_agregator/base_reader"
 require "social_feed_agregator/feed"
 require "koala"
+require 'fastimage'
 
 module SocialFeedAgregator
   class FacebookReader < BaseReader
@@ -54,6 +55,9 @@ module SocialFeedAgregator
     private
   
     def fill_feed(post)
+
+      image_size = FastImage.size post['picture'].gsub('https','http')
+
       Feed.new(
         feed_type: :facebook,
         feed_id: post['id'],                
@@ -63,6 +67,8 @@ module SocialFeedAgregator
         description: post['description'],
         name: post['name'],
         picture_url: post['picture'],
+        picture_width: image_size[0],
+        picture_height: image_size[1],
         link: post['link'],
         caption: post['caption'],        
         message: post['message'],      
