@@ -9,19 +9,19 @@ module SocialFeedAgregator
     def initialize(options={})
       super(options)
       options.replace(SFA.default_options.merge(options))
-      @name = options[:pinterest_user_name]      
+      @name = options[:pinterest_user_name]
     end
-        
+
     def get_feeds(options={})
       super(options)
-      @name = options[:name]  if options[:name]
-      count = options[:count] || 25
-      from_date = options[:from_date] || DateTime.new(1970,1,1) 
+      @name = options[:name] if options[:name]
+      count     = options[:count] || 25
+      from_date = options[:from_date] || DateTime.new(1970, 1, 1)
 
       feeds = []
       items = 0
 
-      doc = Nokogiri::XML( RestClient.get("http://pinterest.com/#{@name}/feed.rss") )
+      doc = Nokogiri::XML(RestClient.get("http://pinterest.com/#{@name}/feed.rss"))
 
       doc.xpath('//item').each do |item|
         items += 1
@@ -33,33 +33,33 @@ module SocialFeedAgregator
         end
 
         feed = fill_feed item
-        
+
         block_given? ? yield(feed) : feeds << feed
       end
       feeds
-    end   
+    end
 
 
-    private 
+    private
     def fill_feed(item)
       desc = item.xpath('description').inner_text.match(/src="(\S+)".+<p>(.+)<\/p>/)
 
       image_size = FastImage.size(desc[1]) || []
 
       Feed.new(
-        feed_type: :pinterest,
-        feed_id: item.xpath('guid').inner_text.match(/\d+/)[0].to_s,
+          feed_type:      :pinterest,
+          feed_id:        item.xpath('guid').inner_text.match(/\d+/)[0].to_s,
 
-        user_id: @name,
-        user_name: @name,
+          user_id:        @name,
+          user_name:      @name,
 
-        # name: item.xpath('title').inner_text,          
-        permalink: item.xpath('link').inner_text,
-        picture_url: desc[1],
-        picture_width: image_size[0],
-        picture_height: image_size[1],
-        description: desc[2],
-        created_at: DateTime.parse(item.xpath('pubDate').inner_text), #.strftime("%Y-%m-%d %H:%M:%S")
+          # name: item.xpath('title').inner_text,
+          permalink:      item.xpath('link').inner_text,
+          picture_url:    desc[1],
+          picture_width:  image_size[0],
+          picture_height: image_size[1],
+          description:    desc[2],
+          created_at:     DateTime.parse(item.xpath('pubDate').inner_text), #.strftime("%Y-%m-%d %H:%M:%S")
       )
     end
   end

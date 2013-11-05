@@ -11,29 +11,29 @@ module SocialFeedAgregator
       super(options)
       options.replace(SFA.default_options.merge(options))
 
-      @name =       options[:facebook_user_name]
-      @app_id =     options[:facebook_app_id]
-      @app_secret = options[:facebook_app_secret]      
-    end    
-        
+      @name       = options[:facebook_user_name]
+      @app_id     = options[:facebook_app_id]
+      @app_secret = options[:facebook_app_secret]
+    end
+
     def get_feeds(options={})
       super(options)
       @name = options[:name] if options[:name]
-      count = options[:count] || 25      
+      count = options[:count] || 25
 
-      from_date = options[:from_date] || DateTime.new(1970,1,1) 
-      
+      from_date = options[:from_date] || DateTime.new(1970, 1, 1)
+
       feeds, i, count_per_request, items = [], 0, 25, 0
 
       parts = (count.to_f / count_per_request).ceil
 
-      oauth = Koala::Facebook::OAuth.new(@app_id, @app_secret)      
-      graph = Koala::Facebook::API.new oauth.get_app_access_token      
+      oauth = Koala::Facebook::OAuth.new(@app_id, @app_secret)
+      graph = Koala::Facebook::API.new oauth.get_app_access_token
       posts = graph.get_connections(@name, "posts")
 
       begin
         i+=1
-        posts.each do |post|    
+        posts.each do |post|
           items+=1
           break if items > count
 
@@ -45,34 +45,34 @@ module SocialFeedAgregator
 
           feed = fill_feed post
 
-          block_given? ? yield(feed) : feeds << feed          
-        end       
+          block_given? ? yield(feed) : feeds << feed
+        end
       end while (posts = posts.next_page) && (i < parts)
       feeds
-    end   
+    end
 
     private
-  
+
     def fill_feed(post)
 
-      image_size = FastImage.size(post['picture'].gsub('https','http')) || []
+      image_size = FastImage.size(post['picture'].gsub('https', 'http')) || []
 
       Feed.new(
-        feed_type: :facebook,
-        feed_id: post['id'],                
-        user_id: post['from']['id'],
-        user_name: post['from']['name'],        
-        permalink: "http://www.facebook.com/#{post['id'].gsub('_', '/posts/')}",
-        description: post['description'],
-        name: post['name'],
-        picture_url: post['picture'],
-        picture_width: image_size[0],
-        picture_height: image_size[1],
-        link: post['link'],
-        caption: post['caption'],        
-        message: post['message'],      
-        created_at: DateTime.parse(post["created_time"]),
-        type: post['type']
+          feed_type:      :facebook,
+          feed_id:        post['id'],
+          user_id:        post['from']['id'],
+          user_name:      post['from']['name'],
+          permalink:      "http://www.facebook.com/#{post['id'].gsub('_', '/posts/')}",
+          description:    post['description'],
+          name:           post['name'],
+          picture_url:    post['picture'],
+          picture_width:  image_size[0],
+          picture_height: image_size[1],
+          link:           post['link'],
+          caption:        post['caption'],
+          message:        post['message'],
+          created_at:     DateTime.parse(post["created_time"]),
+          type:           post['type']
       )
     end
 

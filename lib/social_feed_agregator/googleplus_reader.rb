@@ -63,7 +63,7 @@ module SocialFeedAgregator
         attach = atts.first
 
         if attach['fullImage']
-          picture_url = attach['fullImage']['url']
+          picture_url  = attach['fullImage']['url']
           link         = attach['url']
           image_height = attach['fullImage']['height']
           image_width  = attach['fullImage']['width']
