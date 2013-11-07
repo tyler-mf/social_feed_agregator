@@ -64,6 +64,7 @@ module SocialFeedAgregator
           opts[:max_id] = status.id.to_s
         end
       end
+      puts feeds
       feeds
     end
 
