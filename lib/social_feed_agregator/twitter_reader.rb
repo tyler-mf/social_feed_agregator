@@ -49,7 +49,7 @@ module SocialFeedAgregator
 
         statuses.each do |status|
 
-          puts status
+          puts status.inspect
           puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
           # Break if the date is less
