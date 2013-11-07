@@ -44,7 +44,7 @@ module SocialFeedAgregator
 
       parts = (count.to_f / count_per_request).ceil
 
-      while (statuses = client.user_timeline(@name, opts)) && i < parts do
+      while (statuses = client.home_timeline(@name, opts)) && i < parts do
         i+=1
 
         statuses.each do |status|
