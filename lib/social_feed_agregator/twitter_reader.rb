@@ -40,7 +40,7 @@ module SocialFeedAgregator
       feeds, i          = [], 0
       count_per_request = 200 #::Twitter::REST::API::Timelines::MAX_TWEETS_PER_REQUEST
 
-      opts = { count: count < count_per_request ? count : count_per_request }
+      opts = { exclude_replies: true, count: (count < count_per_request ? count : count_per_request) }
 
       parts = (count.to_f / count_per_request).ceil
 
@@ -50,9 +50,6 @@ module SocialFeedAgregator
         i+=1
 
         statuses.each do |status|
-
-          puts status.inspect
-          puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
           # Break if the date is less
           if status.created_at <= from_date
