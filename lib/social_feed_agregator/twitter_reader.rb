@@ -49,6 +49,9 @@ module SocialFeedAgregator
 
         statuses.each do |status|
 
+          puts status
+          puts "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
           # Break if the date is less
           if status.created_at <= from_date
             i = parts
@@ -64,7 +67,6 @@ module SocialFeedAgregator
           opts[:max_id] = status.id.to_s
         end
       end
-      puts feeds
       feeds
     end
 
